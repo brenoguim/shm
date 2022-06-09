@@ -10,15 +10,17 @@ int main(int argc, char** argv)
     constexpr long _mb = 1024 * _kb;
     constexpr long _gb = 1024 * _mb;
 
-    if (argc != 2)
+    if (argc != 3)
     {
         std::cout << "Wrong number of args" << std::endl;
         return 0;
     }
 
+    bool disable_read_memcpy = atoi(argv[2]);
+
     auto sb = shm::ShmBuffer(argv[1]);
 
-    std::cout << "Start reading" << std::endl;
+    std::cout << "Start reading [disable memcpy = " << disable_read_memcpy << "]" << std::endl;
     auto start = std::chrono::steady_clock::now();
     long br = 0;
 
@@ -29,7 +31,8 @@ int main(int argc, char** argv)
         auto [start, end, cap] = sb.getRBuf();
         if (!start)
             break; // eof
-        std::memcpy(buf, start, end - start); // do something with the buffer. In this case, copy it to emulate some processing
+        if (!disable_read_memcpy)
+            std::memcpy(buf, start, end - start); // do something with the buffer. In this case, copy it to emulate some processing
         br += (end - start);
     }
 
